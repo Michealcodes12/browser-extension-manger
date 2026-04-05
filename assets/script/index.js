@@ -54,7 +54,7 @@ darkBtn.addEventListener("click", () => {
  *
  */
 async function fetchData() {
-  const res = await fetch("../data.json");
+  const res = await fetch("./data.json");
   extensionData = await res.json();
   applyfilter(currentfilter);
 }
@@ -108,12 +108,11 @@ function displayData(extensiondata) {
             </div>
           </div>
           <div class="card-footer">
-            <button class="remove-btn"  id="remove">remove</button>
+            <button class="remove-btn">Remove</button>
             <div class="custom_checkbox">
               <label>
-                <input class="input-checkbox"  ${
-                  element.isActive && "checked"
-                } type="checkbox" />
+                <input class="input-checkbox"  ${element.isActive && "checked"
+      } type="checkbox" />
                 <div class="checkbox"></div>
               </label>
             </div>
@@ -135,78 +134,100 @@ tabButtons.forEach((btn) => {
   });
 });
 
-/// REMOVE CARD FROM THE LIST
-// when user click on the remove button
-cards.addEventListener("click", (e) => {
-  if (e.target.classList.contains("remove-btn")) {
-    confirm("are you sure you amn to delete"); // TODO:
-    const name = e.target.closest(".card").dataset.name;
+let extensionToDelete = null;
 
-    let filterDelete = extensionData.filter((item) => item.name !== name);
-    extensionData = filterDelete;
-    applyfilter(currentfilter); /// this renders the page
+// Modal Elements
+const deleteModal = document.getElementById("delete-modal");
+const confirmDeleteBtn = document.getElementById("confirm-delete");
+const cancelDeleteBtn = document.getElementById("cancel-delete");
+const extensionNameToDelete = document.getElementById("extension-name-to-delete");
+
+function showModal(name) {
+  extensionToDelete = name;
+  extensionNameToDelete.textContent = name;
+  deleteModal.classList.remove("hidden");
+}
+
+function hideModal() {
+  extensionToDelete = null;
+  deleteModal.classList.add("hidden");
+}
+
+cancelDeleteBtn.addEventListener("click", hideModal);
+
+confirmDeleteBtn.addEventListener("click", () => {
+  if (extensionToDelete) {
+    extensionData = extensionData.filter((item) => item.name !== extensionToDelete);
+    applyfilter(currentfilter);
+    hideModal();
     Toastify({
-      text: "Deleted!",
+      text: "Removed!",
       duration: 800,
       close: true,
-      gravity: "bottom", // `top` or `bottom`
-      position: "right", // `left`, `center` or `right`
-      stopOnFocus: true, // Prevents dismissing of toast on hover
+      gravity: "bottom",
+      position: "right",
+      stopOnFocus: true,
       style: {
-        background:
-          "linear-gradient(to right,rgb(231, 61, 39),rgb(228, 161, 98))",
+        background: "linear-gradient(to right,rgb(231, 61, 39),rgb(228, 161, 98))",
         borderRadius: "10px",
       },
-      onClick: function () {}, // Callback after click
     }).showToast();
   }
 });
 
-/// CHECKBOX TOGGLE
-// when user click on the checkbox
+/// EVENT DELEGATION FOR CARDS
 cards.addEventListener("click", (e) => {
-  if (e.target.classList.contains("checkbox")) {
+  if (e.target.classList.contains("remove-btn")) {
     const name = e.target.closest(".card").dataset.name;
-    const checkbox = e.target.closest(".checkbox").previousElementSibling;
-    checkbox.addEventListener("change", (e) => {
-      const extentionCard = extensionData.find((item) => item.name === name);
+    showModal(name);
+  }
+});
 
-      if (extentionCard) {
-        extentionCard.isActive = e.target.checked;
-        applyfilter(currentfilter); /// this renders the page
-        if (extentionCard.isActive) {
-          Toastify({
-            text: "Activated!",
-            duration: 800,
-            close: true,
-            gravity: "bottom", // `top` or `bottom`
-            position: "right", // `left`, `center` or `right`
-            stopOnFocus: true, // Prevents dismissing of toast on hover
-            style: {
-              background:
-                "linear-gradient(to right,rgb(11, 139, 7),rgb(82, 187, 91))",
-              borderRadius: "10px",
-            },
-            onClick: function () {}, // Callback after click
-          }).showToast();
-        } else {
-          Toastify({
-            text: "Deactivated!",
-            duration: 800,
-            close: true,
-            gravity: "bottom", // `top` or `bottom`
-            position: "right", // `left`, `center` or `right`
-            stopOnFocus: true, // Prevents dismissing of toast on hover
-            style: {
-              background:
-                "linear-gradient(to right,rgb(226, 87, 52),rgb(206, 35, 5))",
-              borderRadius: "10px",
-            },
-            onClick: function () {}, // Callback after click
-          }).showToast();
-        }
+// CHECKBOX TOGGLE - trigger on change event
+cards.addEventListener("change", (e) => {
+  if (e.target.classList.contains("input-checkbox")) {
+    const name = e.target.closest(".card").dataset.name;
+    const extensionCard = extensionData.find((item) => item.name === name);
+
+    if (extensionCard) {
+      extensionCard.isActive = e.target.checked;
+
+      // Only re-render if the current filter would exclude the newly toggled item
+      if ((currentfilter === "Active" && !extensionCard.isActive) ||
+        (currentfilter === "Inactive" && extensionCard.isActive)) {
+        applyfilter(currentfilter);
       }
-    });
+
+      if (extensionCard.isActive) {
+        Toastify({
+          text: "Activated!",
+          duration: 800,
+          close: true,
+          gravity: "bottom", // `top` or `bottom`
+          position: "right", // `left`, `center` or `right`
+          stopOnFocus: true, // Prevents dismissing of toast on hover
+          style: {
+            background:
+              "linear-gradient(to right,rgb(11, 139, 7),rgb(82, 187, 91))",
+            borderRadius: "10px",
+          },
+        }).showToast();
+      } else {
+        Toastify({
+          text: "Deactivated!",
+          duration: 800,
+          close: true,
+          gravity: "bottom", // `top` or `bottom`
+          position: "right", // `left`, `center` or `right`
+          stopOnFocus: true, // Prevents dismissing of toast on hover
+          style: {
+            background:
+              "linear-gradient(to right,rgb(226, 87, 52),rgb(206, 35, 5))",
+            borderRadius: "10px",
+          },
+        }).showToast();
+      }
+    }
   }
 });
 ///  ENTRY FUNCTION (MAIN FUNCTION)
