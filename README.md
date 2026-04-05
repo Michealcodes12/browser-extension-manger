@@ -40,4 +40,10 @@ If you'd like to test the features above out or build upon it further:
 
 ## 📸 Screenshots
 
-*(Replace this section with screenshots of your active vs inactive filter states and the new pop-up dialogue box!)*
+
+![Design preview for the Browser extensions manager UI coding challenge](./design/desktop-design-light-active.jpg)
+
+![Design preview for the Browser extensions manager UI coding challenge](./design/desktop-design-dark-active.jpg)
+
+
+
